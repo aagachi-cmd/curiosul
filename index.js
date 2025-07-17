@@ -1,56 +1,56 @@
-app.post('/alexa', (req, res) => {
-    const body = req.body;
+// index.js - server Express minimal care rulează pe portul 10000
 
-    if (!body || Object.keys(body).length === 0) {
-        return res.status(400).json({
-            version: '1.0',
-            response: {
-                outputSpeech: {
-                    type: 'PlainText',
-                    text: 'Nu am primit nicio întrebare.'
-                }
-            }
-        });
-    }
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 10000;
 
-    // Răspunde la LaunchRequest
-    if (body.version && !body.session) {
-        return res.json({
-            version: '1.0',
-            response: {
-                outputSpeech: {
-                    type: 'PlainText',
-                    text: 'Bună! Sunt Curiosul. Poți să mă întrebi orice.'
-                },
-                shouldEndSession: false
-            }
-        });
-    }
+// Middleware pentru parsarea JSON
+app.use(express.json());
 
-    // Răspunde la IntentRequest
-    if (body.session?.new === true && body.request?.type === 'IntentRequest') {
-        const question = body.request.intent.slots.Question.value;
+// Exemplu de route
+app.get('/', (req, res) => {
+  res.send('Serverul rulează corect!');
+});
 
-        return res.json({
-            version: '1.0',
-            response: {
-                outputSpeech: {
-                    type: 'PlainText',
-                    text: `Ai întrebat: ${question}`
-                },
-                shouldEndSession: true
-            }
-        });
-    }
+// Exemplu de POST route (dacă ai un API care primește JSON)
+app.post('/webhook', (req, res) => {
+  const request = req.body;
 
-    // Răspuns generic pentru orice altceva
+  // Verificăm dacă request și request.type există
+  if (!request || !request.request || !request.request.type) {
     return res.status(400).json({
-        version: '1.0',
-        response: {
-            outputSpeech: {
-                type: 'PlainText',
-                text: 'Nu am primit o întrebare validă.'
-            }
-        }
+      error: 'Format cerere invalid - request.type lipsă'
     });
+  }
+
+  const requestType = request.request.type;
+
+  if (requestType === 'LaunchRequest') {
+    res.json({
+      version: '1.0',
+      response: {
+        outputSpeech: {
+          type: 'PlainText',
+          text: 'Bună! Skill-ul funcționează corect.'
+        },
+        shouldEndSession: false
+      }
+    });
+  } else {
+    res.json({
+      version: '1.0',
+      response: {
+        outputSpeech: {
+          type: 'PlainText',
+          text: 'Ai trimis un request de alt tip.'
+        },
+        shouldEndSession: true
+      }
+    });
+  }
+});
+
+// Pornim serverul
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Serverul rulează pe portul ${PORT}`);
 });
