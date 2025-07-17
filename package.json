@@ -1,15 +1,12 @@
 {
   "name": "curiosul",
   "version": "1.0.0",
+  "description": "Un skill Alexa care răspunde la întrebări",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "body-parser": "^1.20.2"
-  },
-  "engines": {
-    "node": ">=18.x"
+    "express": "^4.18.2"
   }
 }
