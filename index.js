@@ -1,64 +1,62 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const axios = require('axios');
+
 const app = express();
 
+// Acceptă JSON în POST requests
 app.use(bodyParser.json());
 
-app.post('/alexa', async (req, res) => {
-    const request = req.body;
+// Ruta principală – doar pt testare
+app.get('/', (req, res) => {
+    res.send('Curiosul e online!');
+});
 
-    if (request.request.type === 'LaunchRequest') {
+// Endpoint-ul Alexa
+app.post('/alexa', (req, res) => {
+    const body = req.body;
+
+    // Verificăm dacă e LaunchRequest
+    if (body.version && !body.session) {
         return res.json({
             version: '1.0',
             response: {
                 outputSpeech: {
                     type: 'PlainText',
                     text: 'Bună! Sunt Curiosul. Poți să mă întrebi orice.'
-                }
+                },
+                shouldEndSession: false
             }
         });
     }
 
-    if (request.request.type === 'IntentRequest' && request.request.intent.name === 'AskCuriosulIntent') {
-        const question = request.request.intent.slots.Question.value;
+    // Verificăm dacă e IntentRequest
+    if (body.session?.new === true && body.request?.type === 'IntentRequest') {
+        const question = body.request.intent.slots.Question.value || 'nimic';
 
-        try {
-            const response = await axios.post('https://api.openai.com/v1/chat/completions ', {
-                model: 'gpt-3.5-turbo',
-                messages: [{ role: 'user', content: question }]
-            }, {
-                headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` }
-            });
-
-            const answer = response.data.choices[0].message.content.trim();
-
-            return res.json({
-                version: '1.0',
-                response: {
-                    outputSpeech: {
-                        type: 'PlainText',
-                        text: answer
-                    }
-                }
-            });
-
-        } catch (err) {
-            console.error(err);
-            return res.json({
-                version: '1.0',
-                response: {
-                    outputSpeech: {
-                        type: 'PlainText',
-                        text: 'Îmi pare rău, momentan nu pot răspunde.'
-                    }
-                }
-            });
-        }
+        return res.json({
+            version: '1.0',
+            response: {
+                outputSpeech: {
+                    type: 'PlainText',
+                    text: `Ai întrebat: ${question}`
+                },
+                shouldEndSession: true
+            }
+        });
     }
 
-    res.status(400).send('Unknown intent');
+    // Dacă nu e niciuna dintre cele de mai sus → eroare
+    return res.status(400).json({
+        version: '1.0',
+        response: {
+            outputSpeech: {
+                type: 'PlainText',
+                text: 'Nu am primit o cerere validă.'
+            }
+        }
+    });
 });
 
+// Ascultă pe portul oferit de Render (implicit 10000)
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`Serverul rulează pe portul ${PORT}`));
