@@ -1,56 +1,40 @@
-// index.js - server Express minimal care rulează pe portul 10000
+if (requestType === 'LaunchRequest') {
+  res.json({
+    version: '1.0',
+    response: {
+      outputSpeech: {
+        type: 'PlainText',
+        text: 'Salut! Poți să-mi pui o întrebare.'
+      },
+      shouldEndSession: false
+    }
+  });
+} else if (requestType === 'IntentRequest') {
+  const intent = request.request.intent;
+  const userQuestion = intent.slots?.question?.value || "nu am înțeles întrebarea";
 
-const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 10000;
+  // Poți înlocui cu logica ta de căutare în JSON
+  const answer = `Ai întrebat: ${userQuestion}. Momentan răspunsul este generat fix.`; // TODO: conectează cu baza ta de date
 
-// Middleware pentru parsarea JSON
-app.use(express.json());
-
-// Exemplu de route
-app.get('/', (req, res) => {
-  res.send('Serverul rulează corect!');
-});
-
-// Exemplu de POST route (dacă ai un API care primește JSON)
-app.post('/webhook', (req, res) => {
-  const request = req.body;
-
-  // Verificăm dacă request și request.type există
-  if (!request || !request.request || !request.request.type) {
-    return res.status(400).json({
-      error: 'Format cerere invalid - request.type lipsă'
-    });
-  }
-
-  const requestType = request.request.type;
-
-  if (requestType === 'LaunchRequest') {
-    res.json({
-      version: '1.0',
-      response: {
-        outputSpeech: {
-          type: 'PlainText',
-          text: 'Bună! Skill-ul funcționează corect.'
-        },
-        shouldEndSession: false
-      }
-    });
-  } else {
-    res.json({
-      version: '1.0',
-      response: {
-        outputSpeech: {
-          type: 'PlainText',
-          text: 'Ai trimis un request de alt tip.'
-        },
-        shouldEndSession: true
-      }
-    });
-  }
-});
-
-// Pornim serverul
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Serverul rulează pe portul ${PORT}`);
-});
+  res.json({
+    version: '1.0',
+    response: {
+      outputSpeech: {
+        type: 'PlainText',
+        text: answer
+      },
+      shouldEndSession: false
+    }
+  });
+} else {
+  res.json({
+    version: '1.0',
+    response: {
+      outputSpeech: {
+        type: 'PlainText',
+        text: 'Tip de cerere necunoscut.'
+      },
+      shouldEndSession: true
+    }
+  });
+}
