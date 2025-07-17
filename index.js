@@ -1,17 +1,17 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-
-const app = express();
-app.use(bodyParser.json());
-
-// Răspuns test pe GET /
-app.get('/', (req, res) => {
-    res.send('Curiosul e online!');
-});
-
-// Endpoint pentru Alexa
 app.post('/alexa', (req, res) => {
     const body = req.body;
+
+    if (!body || Object.keys(body).length === 0) {
+        return res.status(400).json({
+            version: '1.0',
+            response: {
+                outputSpeech: {
+                    type: 'PlainText',
+                    text: 'Nu am primit nicio întrebare.'
+                }
+            }
+        });
+    }
 
     // Răspunde la LaunchRequest
     if (body.version && !body.session) {
@@ -27,7 +27,7 @@ app.post('/alexa', (req, res) => {
         });
     }
 
-    // Răspunde la întrebări
+    // Răspunde la IntentRequest
     if (body.session?.new === true && body.request?.type === 'IntentRequest') {
         const question = body.request.intent.slots.Question.value;
 
@@ -43,7 +43,7 @@ app.post('/alexa', (req, res) => {
         });
     }
 
-    // Răspuns generic pentru erori
+    // Răspuns generic pentru orice altceva
     return res.status(400).json({
         version: '1.0',
         response: {
@@ -53,9 +53,4 @@ app.post('/alexa', (req, res) => {
             }
         }
     });
-});
-
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Serverul rulează pe portul ${PORT}`);
 });
