@@ -1,0 +1,22 @@
+{
+  "name": "curiosul",
+  "version": "1.0.0",
+  "description": "Alexa Skill powered by ChatGPT (OpenAI)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --no-warnings index.js",
+    "test": "echo \"Nu sunt teste definite încă.\" && exit 1"
+  },
+  "dependencies": {
+    "alexa-sdk": "^1.0.25",
+    "axios": "^1.6.2",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18.x"
+  },
+  "author": "Angela",
+  "license": "MIT"
+}
